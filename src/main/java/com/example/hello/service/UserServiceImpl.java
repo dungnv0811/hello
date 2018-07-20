@@ -1,6 +1,6 @@
 package com.example.hello.service;
 
-import com.example.hello.repository.UserRepository;
+import com.example.hello.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;

@@ -1,12 +1,16 @@
 package com.example.hello.config;
 
+import com.example.hello.security.FootballTokenStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
 @Configuration
@@ -25,9 +29,10 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     static final String TRUST = "trust";
     static final int ACCESS_TOKEN_VALIDITY_SECONDS = 1*60*60;
     static final int FREFRESH_TOKEN_VALIDITY_SECONDS = 6*60*60;
+    Integer timeOut = 30 * 24 * 3600;
 
     @Autowired
-    private TokenStore tokenStore;
+    private FootballTokenStore footballTokenStore;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -47,7 +52,17 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.tokenStore(tokenStore)
+        endpoints.tokenStore(footballTokenStore)
             .authenticationManager(authenticationManager);
+    }
+
+    @Primary
+    @Bean
+    public DefaultTokenServices tokenServices() {
+        DefaultTokenServices tokenServices = new DefaultTokenServices();
+        tokenServices.setSupportRefreshToken(true);
+        tokenServices.setRefreshTokenValiditySeconds(timeOut);
+        tokenServices.setTokenStore(footballTokenStore);
+        return tokenServices;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.hello.config;
 
+import com.example.hello.security.FootballTokenStore;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,10 +14,16 @@ import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHand
 public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
     private static final String RESOURCE_ID = "resource_id";
+    private FootballTokenStore footballTokenStore;
+
+    public ResourceServerConfig(FootballTokenStore footballTokenStore) {
+        this.footballTokenStore = footballTokenStore;
+    }
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
-        resources.resourceId(RESOURCE_ID).stateless(false);
+        resources.resourceId(RESOURCE_ID);
+        resources.tokenStore(footballTokenStore);
     }
 
     @Override
