@@ -21,6 +21,7 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+// override some of Spring’s build in security protocols to use our database and hashing algorithm
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -32,18 +33,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
+    // tell Spring where our user data is located and where to find the information it needs for authentication
+    // specify in our SecurityConfiguration that we want to use the FootballUserDetailsService for our authentication
     @Override
     public void configure(AuthenticationManagerBuilder builder) throws Exception {
-        builder.userDetailsService(userDetailsService).passwordEncoder(encoder());
+        builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
 
     @Override
+    // tell Spring Security how we want to handle user authentication
     protected void configure(HttpSecurity http) throws Exception {
         http
+            // Disables CSRF protection, as it is unnecessary for an API
             .csrf().disable()
             .anonymous().disable()
+            // all requests to any endpoint must be authorizes, or else they should be rejected
             .authorizeRequests()
-            .antMatchers("/api-docs/**").permitAll();
+            .antMatchers("/api-docs/**").permitAll()
+            .antMatchers("/oauth/**").permitAll()
+            .antMatchers("/login/**").permitAll()
+            .anyRequest().authenticated();
     }
 
     @Bean
@@ -52,7 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public BCryptPasswordEncoder encoder(){
+    public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
